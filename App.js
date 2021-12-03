@@ -1,13 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import {
+  Button,
   ImageBackground,
   Keyboard,
   SafeAreaView,
   StyleSheet,
+  Text,
+  TouchableHighlightBase,
   TouchableWithoutFeedbackBase,
   View,
 } from 'react-native';
+import { TouchableHighlight, TouchableOpacity } from 'react-native-gesture-handler';
 import config from './config';
 import ForecastInfo from './src/components/ForecastInfo';
 import LoadIndicator from './src/components/LoadIndicator';
@@ -32,10 +36,12 @@ export default function App() {
   });
 
   const fetchWeather = async () => {
+
     try {
       const currUrl = `https://pro.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${config.API_KEY}`;
       const forecastUrl = `https://pro.openweathermap.org/data/2.5/forecast/daily?q=${city}&units=metric&cnt=7&appid=${config.API_KEY}`;
       const hourlyForecastUrl = `https://pro.openweathermap.org/data/2.5/forecast/hourly?q=${city}&units=metric&cnt=18&appid=${config.API_KEY}`;
+
 
       const responseCurr = await fetch(currUrl);
       const dataCurr = await responseCurr.json();
@@ -43,10 +49,6 @@ export default function App() {
       const dataForecast = await responseForecast.json();
       const responseHourlyForecast = await fetch(hourlyForecastUrl);
       const dataHourlyForecast = await responseHourlyForecast.json();
-
-      console.log(dataCurr);
-      console.log(dataForecast);
-      console.log(dataHourlyForecast);
 
       setcurrWeather({
         ...currWeather,
@@ -70,13 +72,14 @@ export default function App() {
   useEffect(() => {
     if (city === null) return;
     fetchWeather();
+    setShowWhisper(false);
   }, [city]);
 
   useEffect(() => {
     const fetchLocationWeather = async () => {
       try {
-        const url = `https://pro.openweathermap.org/data/2.5/find?lat=${location.coords.latitude}&lon=${location.coords.longitude}&cnt=1&appid=62b82ba109f836c42c7ca88f13598612`;
-        console.log(url);
+        const url = `https://pro.openweathermap.org/data/2.5/find?lat=${location.coords.latitude}&lon=${location.coords.longitude}&cnt=1&appid=${config.API_KEY}`;
+        // console.log(url);
         const response = await fetch(url);
         const data = await response.json();
 
@@ -89,6 +92,27 @@ export default function App() {
     fetchLocationWeather();
   }, [location]);
 
+  const fetchCityList = async (str) => {
+    const response = await fetch(`https://city-list-api.herokuapp.com/${str}`);
+    const data = await response.json();
+
+    console.log("City: ", data);
+    setCities(data);
+  }
+
+  const [cities, setCities] = useState([])
+  const [searchText, setSearchText] = useState('')
+  const [showWhisperer, setShowWhisper] = useState(false)
+
+  useEffect(() => {
+    if (searchText.length > 0) {
+      fetchCityList(searchText)
+      setShowWhisper(true)
+    } else {
+      setShowWhisper(false)
+    }
+  }, [searchText]);
+
   return (
     <ImageBackground
       source={require('./assets/2248.jpg')}
@@ -98,11 +122,24 @@ export default function App() {
       {/* TODO: Dismims keyboard */}
       <SafeAreaView style={styles.container}>
         <StatusBar />
+        {showWhisperer && <View style={styles.cityWhisperer}>
+          {cities.map((c, idx) => (<TouchableOpacity key={idx} onPress={() => {
+            setCity(c.name)
+            setSearchText(c.name)
+            setShowWhisper(false)
+          }}>
+            <Text style={styles.cityWhispererItem}>{c.name}</Text>
+          </TouchableOpacity>))}
+
+        </View>}
         <View style={styles.top}>
+
           <TopBar
             setLocation={setLocation}
             setCity={setCity}
             setLoading={setLoading}
+            searchText={searchText}
+            setSearchText={setSearchText}
           />
         </View>
         <View style={styles.middle}>
@@ -132,23 +169,38 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  cityWhispererItem: {
+    padding: 10,
+    fontSize: 18
+  },
+  cityWhisperer: {
+    position: 'absolute',
+    zIndex: 1,
+    left: 26,
+    top: 110,
+    backgroundColor: 'white',
+    width: 236,
+    borderRadius: 4,
+    paddingTop: 0,
+    marginTop: 0
+  },
   container: {
     flex: 1,
     alignItems: 'center',
   },
   top: {
-    flex: 0.095,
+    flex: 0.2,
     // backgroundColor: 'cyan',
     alignSelf: 'stretch',
   },
   middle: {
-    flex: 0.38,
+    flex: 0.7,
     //  backgroundColor: 'cyan',
     alignSelf: 'stretch',
     borderBottomRightRadius: 75,
   },
   bottom: {
-    flex: 0.52,
+    flex: 1,
     alignSelf: 'stretch',
   },
 });

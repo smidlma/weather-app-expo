@@ -1,5 +1,4 @@
-const API_KEY = '62b82ba109f836c42c7ca88f13598612';
+const API_KEY = '2ab7ce3bd925a9ab2d6817bcf287ab12';
 const ICONS_URL = 'http://openweathermap.org/img/wn/';
-
 const config = { API_KEY, ICONS_URL };
 export default config;

@@ -1,13 +1,14 @@
-import React from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as Location from 'expo-location';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
+import { TouchableHighlight, TouchableOpacity } from 'react-native-gesture-handler';
+import AutocompleteInput from 'react-native-autocomplete-input';
+
 
 const TopBar = (props) => {
-  const { setLocation, setCity , setLoading} = props;
-
-  const [searchText, setSearchText] = useState('');
+  const { setLocation, setCity, setLoading, setSearchText, searchText } = props;
 
   const getLocation = async () => {
     console.log('Geolocation fired');
@@ -22,11 +23,24 @@ const TopBar = (props) => {
     setLoading(false);
   };
 
+  
+
+
+
+  // const whisperCity = (str) => {
+  //   fetchCityList(str);
+  // }
+
+
   const searchCity = () => {
+    // setShowWhisper(false);
+    // setCities([]);
     setCity(searchText);
   };
 
   return (
+
+
     <View style={styles.container}>
       <View style={styles.search}>
         <Ionicons
@@ -37,18 +51,38 @@ const TopBar = (props) => {
         <TextInput
           style={styles.searchInput}
           placeholder="Search city"
-          onChangeText={(text) => setSearchText(text.trim())}
+          onChangeText={(text) => setSearchText(text)}
           onSubmitEditing={searchCity}
+          value={searchText}
         />
+
       </View>
       <View style={styles.location}>
-        <Ionicons name="md-location" size={32} onPress={getLocation}  />
+        <Ionicons name="md-location" size={32} onPress={getLocation} />
       </View>
     </View>
+
+
+
   );
 };
 
 const styles = StyleSheet.create({
+  whisperer: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    backgroundColor: 'white',
+    width: 240,
+    borderRadius: 10,
+    height: 500
+  },
+  whisperer__item: {
+    width: 200,
+    fontSize: 20,
+
+
+  },
   container: {
     flex: 1,
     flexDirection: 'row',
